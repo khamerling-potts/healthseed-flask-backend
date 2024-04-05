@@ -7,6 +7,9 @@ from flask_restful import Resource
 # Local imports
 from config import app, db, api
 
+# Model imports
+from models.user import User
+
 
 users = [
  { 'id': 1, 'name': 'Ashley' },
