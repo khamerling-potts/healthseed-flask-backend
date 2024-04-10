@@ -9,6 +9,8 @@ from config import db, bcrypt
 class Condition(db.Model, SerializerMixin):
     __tablename__ = 'conditions'
 
+    serialize_rules = ('-user.conditions',)
+
     id = db.Column(db.Integer, primary_key = True)
     description = db.Column(db.String, nullable=False)
 

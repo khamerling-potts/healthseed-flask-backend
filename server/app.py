@@ -11,6 +11,18 @@ from config import app, db, api
 from models.user import User
 from models.condition import Condition
 
+@app.before_request
+def check_logged_in():
+    if request.endpoint not in ['login']:
+        print('checking logged in')
+        if not session.get('user_id'):
+            return {'error': 'Unauthorized'}, 401
+        
+class CheckSession(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        user = User.query.filter_by(id=user_id).first()
+        return user.to_dict(), 200
 
 
 class Login(Resource):
@@ -39,10 +51,35 @@ class Users(Resource):
             return new_user.to_dict(), 200
         except Exception as exc:
             return {'error': '422 - Unprocessable Entity'}, 422
+        
+
+class Conditions(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        conditions = [condition.to_dict() for condition in Condition.query.filter_by(user_id=user_id)]
+        return conditions, 200
+    
+    def post(self):
+        user_id = session.get('user_id')
+        data = request.get_json()
+        description = data.get('description')
+        try:
+            new_condition = Condition(description=description, user_id=user_id)
+            print(new_condition)
+            db.session.add(new_condition)
+            db.session.commit()
+            print('here')
+            return new_condition.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': "422 - Unprocessable Entity"}, 422
 
 
+
+api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Users, "/users", endpoint="users")
+api.add_resource(Conditions, '/conditions', endpoint='conditions')
 
 
 if __name__ == "__main__":
