@@ -14,13 +14,17 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
-    serialize_rules = ()
+    serialize_rules = ('-_password_hash',)
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
+    name = db.Column(db.String, unique=True, nullable=False)
     # ratings = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), nullable=True)
     birthday = db.Column(db.Date, nullable=False)
     _password_hash = db.Column(db.String)
+
+    # One to many relationship with Condition
+    conditions = db.relationship('Condition', back_populates='user', cascade='all, delete-orphan')
 
 
     @hybrid_property
