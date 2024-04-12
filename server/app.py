@@ -11,9 +11,10 @@ from config import app, db, api
 from models.user import User
 from models.condition import Condition
 
+
 @app.before_request
 def check_logged_in():
-    if request.endpoint not in ['login']:
+    if request.endpoint not in ['login', 'users']:
         print('checking logged in')
         if not session.get('user_id'):
             return {'error': 'Unauthorized'}, 401
@@ -30,13 +31,21 @@ class Login(Resource):
         data = request.get_json()
         [username, password] = [data.get('username'), data.get('password')]
         user = User.query.filter_by(username=username.lower()).first()
+        
         if user and user.authenticate(password):
             session['user_id'] = user.id
             return user.to_dict(), 200
         return {'error': '401 - Unauthorized'}, 401
+    
+class Logout(Resource):
+    def delete(self):
+        session['user_id'] = None
+        return {}, 204
+
 
 class Users(Resource):
     def get(self):
+        breakpoint()
         users = [user.to_dict() for user in User.query.all()]
         return users, 200
     
@@ -48,8 +57,10 @@ class Users(Resource):
             new_user.password_hash = password
             db.session.add(new_user)
             db.session.commit()
+            session['user_id'] = new_user.id
             return new_user.to_dict(), 200
         except Exception as exc:
+            print(exc)
             return {'error': '422 - Unprocessable Entity'}, 422
         
 
@@ -78,6 +89,7 @@ class Conditions(Resource):
 
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
+api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(Users, "/users", endpoint="users")
 api.add_resource(Conditions, '/conditions', endpoint='conditions')
 
