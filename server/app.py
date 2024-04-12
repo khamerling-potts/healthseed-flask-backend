@@ -54,10 +54,15 @@ class Users(Resource):
         [username, password, name, birthday] = [data.get('username'), data.get('password'), data.get('name'), data.get('birthday')]
         try:
             new_user = User(username=username, name=name, birthday=birthday)
+            print('1')
             new_user.password_hash = password
+            print('2')
             db.session.add(new_user)
+            print('3')
             db.session.commit()
+            print('4')
             session['user_id'] = new_user.id
+            print('5')
             return new_user.to_dict(), 200
         except Exception as exc:
             print(exc)
