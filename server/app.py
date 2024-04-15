@@ -46,7 +46,6 @@ class Logout(Resource):
 
 class Users(Resource):
     def get(self):
-        breakpoint()
         users = [user.to_dict() for user in User.query.all()]
         return users, 200
     
@@ -90,6 +89,27 @@ class Conditions(Resource):
         except Exception as exc:
             print(exc)
             return {'error': "422 - Unprocessable Entity"}, 422
+        
+# class Providers(Resource):
+#     def get(self):
+#         user_id = session.get('user_id')
+#         conditions = [condition.to_dict() for condition in Condition.query.filter_by(user_id=user_id)]
+#         return conditions, 200
+    
+#     def post(self):
+#         user_id = session.get('user_id')
+#         data = request.get_json()
+#         description = data.get('description')
+#         try:
+#             new_condition = Condition(description=description, user_id=user_id)
+#             print(new_condition)
+#             db.session.add(new_condition)
+#             db.session.commit()
+#             print('here')
+#             return new_condition.to_dict(), 201
+#         except Exception as exc:
+#             print(exc)
+#             return {'error': "422 - Unprocessable Entity"}, 422
 
 
 
