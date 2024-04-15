@@ -18,6 +18,7 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 honcho = "*"
 flask-bcrypt = '1.0.1'
+phonenumbers = '8.13.34'
 
 [requires]
 python_full_version = "3.12.2"
