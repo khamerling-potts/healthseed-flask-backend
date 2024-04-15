@@ -26,6 +26,9 @@ class User(db.Model, SerializerMixin):
     # One to many relationship with Condition
     conditions = db.relationship('Condition', back_populates='user', cascade='all, delete-orphan')
 
+    # One to many relationship with Provider
+    providers = db.relationship('Provider', back_populates='user', cascade='all, delete-orphan')
+
 
     @hybrid_property
     def password_hash(self):

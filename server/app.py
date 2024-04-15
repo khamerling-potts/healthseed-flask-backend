@@ -10,6 +10,7 @@ from config import app, db, api
 # Model imports
 from models.user import User
 from models.condition import Condition
+from models.provider import Provider
 
 
 @app.before_request
