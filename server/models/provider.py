@@ -16,7 +16,7 @@ from config import db, bcrypt
 class Provider(db.Model, SerializerMixin):
     __tablename__ = "providers"
 
-    serialize_rules = ('-user.providers',)
+    serialize_rules = ('-user',)
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)
@@ -40,7 +40,7 @@ class Provider(db.Model, SerializerMixin):
                 number = phonenumbers.parse(phone, None)
                 if not phonenumbers.is_possible_number(number) or not phonenumbers.is_valid_number(number):
                     raise ValueError('Not a valid phone number')
-                return number
+                return number.national_number
             except Exception as exc:
                 raise Exception(exc)
         return phone

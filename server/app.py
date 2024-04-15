@@ -13,12 +13,12 @@ from models.condition import Condition
 from models.provider import Provider
 
 
-@app.before_request
-def check_logged_in():
-    if request.endpoint not in ['login', 'users']:
-        print('checking logged in')
-        if not session.get('user_id'):
-            return {'error': 'Unauthorized'}, 401
+# @app.before_request
+# def check_logged_in():
+#     if request.endpoint not in ['login', 'users']:
+#         print('checking logged in')
+#         if not session.get('user_id'):
+#             return {'error': 'Unauthorized'}, 401
         
 class CheckSession(Resource):
     def get(self):
@@ -90,26 +90,25 @@ class Conditions(Resource):
             print(exc)
             return {'error': "422 - Unprocessable Entity"}, 422
         
-# class Providers(Resource):
-#     def get(self):
-#         user_id = session.get('user_id')
-#         conditions = [condition.to_dict() for condition in Condition.query.filter_by(user_id=user_id)]
-#         return conditions, 200
+class Providers(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        providers = [provider.to_dict() for provider in Provider.query.filter_by(user_id=user_id)]
+        return providers, 200
     
-#     def post(self):
-#         user_id = session.get('user_id')
-#         data = request.get_json()
-#         description = data.get('description')
-#         try:
-#             new_condition = Condition(description=description, user_id=user_id)
-#             print(new_condition)
-#             db.session.add(new_condition)
-#             db.session.commit()
-#             print('here')
-#             return new_condition.to_dict(), 201
-#         except Exception as exc:
-#             print(exc)
-#             return {'error': "422 - Unprocessable Entity"}, 422
+    def post(self):
+        # user_id = session.get('user_id')
+        user_id = 1
+        data = request.get_json()
+        [name, phone, address] = [data.get('name'), data.get('phone'), data.get('address')]
+        try:
+            new_provider = Provider(name=name, phone=phone, address=address, user_id=user_id)
+            db.session.add(new_provider)
+            db.session.commit()
+            return new_provider.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': "422 - Unprocessable Entity"}, 422
 
 
 
@@ -118,6 +117,7 @@ api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(Users, "/users", endpoint="users")
 api.add_resource(Conditions, '/conditions', endpoint='conditions')
+api.add_resource(Providers, '/providers', endpoint='providers')
 
 
 if __name__ == "__main__":
