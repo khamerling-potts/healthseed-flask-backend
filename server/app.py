@@ -90,6 +90,32 @@ class Conditions(Resource):
             print(exc)
             return {'error': "422 - Unprocessable Entity"}, 422
         
+
+class ConditionByID(Resource):
+    def patch(self, id):
+        data = request.get_json()
+        try:
+            condition = Condition.query.filter_by(id=id).first()
+            condition.description = data.get('description')
+            db.session.add(condition)
+            db.session.commit()
+            return condition.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable Entity'}, 422
+        
+    def delete(self, id):
+        try:
+            condition = Condition.query.filter_by(id=id).first()
+            db.session.delete(condition)
+            db.session.commit()
+            return {"message": "condition successfully deleted"}, 204
+        except Exception as exc:
+            print(exc)
+            return {'error': '404 - Not found'}, 404
+
+
+        
 class Providers(Resource):
     def get(self):
         user_id = session.get('user_id')
@@ -117,6 +143,7 @@ api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(Users, "/users", endpoint="users")
 api.add_resource(Conditions, '/conditions', endpoint='conditions')
+api.add_resource(ConditionByID, '/conditions/<int:id>', endpoint='conditions/<int:id>')
 api.add_resource(Providers, '/providers', endpoint='providers')
 
 
