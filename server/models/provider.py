@@ -38,9 +38,11 @@ class Provider(db.Model, SerializerMixin):
         if not phone=='':
             try:
                 number = phonenumbers.parse(phone, None)
-                if not phonenumbers.is_possible_number(number) or not phonenumbers.is_valid_number(number):
-                    raise ValueError('Not a valid phone number')
-                return number.national_number
+                if not phonenumbers.is_possible_number(number):
+                    raise ValueError('Not a possible phone number')
+                if not phonenumbers.is_valid_number(number):
+                    raise ValueError('Not an existing phone number')
+                return f'+{number.country_code}{number.national_number}'
             except Exception as exc:
                 raise Exception(exc)
         return phone

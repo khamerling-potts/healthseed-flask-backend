@@ -3,6 +3,7 @@ import json
 # Remote library imports
 from flask import request, session, make_response
 from flask_restful import Resource
+import phonenumbers
 
 # Local imports
 from config import app, db, api
@@ -13,12 +14,12 @@ from models.condition import Condition
 from models.provider import Provider
 
 
-# @app.before_request
-# def check_logged_in():
-#     if request.endpoint not in ['login', 'users']:
-#         print('checking logged in')
-#         if not session.get('user_id'):
-#             return {'error': 'Unauthorized'}, 401
+@app.before_request
+def check_logged_in():
+    if request.endpoint not in ['login', 'users']:
+        print('checking logged in')
+        if not session.get('user_id'):
+            return {'error': 'Unauthorized'}, 401
         
 class CheckSession(Resource):
     def get(self):
@@ -96,7 +97,8 @@ class ConditionByID(Resource):
         data = request.get_json()
         try:
             condition = Condition.query.filter_by(id=id).first()
-            condition.description = data.get('description')
+            for attr in data:
+                setattr(condition, attr, data.get(attr))
             db.session.add(condition)
             db.session.commit()
             return condition.to_dict(), 201
@@ -123,18 +125,45 @@ class Providers(Resource):
         return providers, 200
     
     def post(self):
-        # user_id = session.get('user_id')
-        user_id = 1
+        user_id = session.get('user_id')
         data = request.get_json()
         [name, phone, address] = [data.get('name'), data.get('phone'), data.get('address')]
         try:
             new_provider = Provider(name=name, phone=phone, address=address, user_id=user_id)
+            print(new_provider.phone)
             db.session.add(new_provider)
             db.session.commit()
             return new_provider.to_dict(), 201
         except Exception as exc:
             print(exc)
             return {'error': "422 - Unprocessable Entity"}, 422
+        
+
+class ProviderByID(Resource):
+    def patch(self, id):
+        data = request.get_json()
+        print(data)
+        try:
+            provider = Provider.query.filter_by(id=id).first()
+            for attr in data:
+                setattr(provider, attr, data.get(attr))
+            db.session.add(provider)
+            db.session.commit()
+            return provider.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable Entity'}, 422
+        
+    def delete(self, id):
+        try:
+            provider = Provider.query.filter_by(id=id).first()
+            db.session.delete(provider)
+            db.session.commit()
+            return {"message": "provider successfully deleted"}, 204
+        except Exception as exc:
+            print(exc)
+            return {'error': '404 - Not found'}, 404
+
 
 
 
@@ -145,6 +174,7 @@ api.add_resource(Users, "/users", endpoint="users")
 api.add_resource(Conditions, '/conditions', endpoint='conditions')
 api.add_resource(ConditionByID, '/conditions/<int:id>', endpoint='conditions/<int:id>')
 api.add_resource(Providers, '/providers', endpoint='providers')
+api.add_resource(ProviderByID, '/providers/<int:id>', endpoint="providers/<int:id>")
 
 
 if __name__ == "__main__":
