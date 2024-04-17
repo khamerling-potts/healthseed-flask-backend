@@ -12,6 +12,9 @@ from config import app, db, api
 from models.user import User
 from models.condition import Condition
 from models.provider import Provider
+from models.instruction import Instruction
+from models.medication import Medication
+from models.routine import Routine
 
 
 @app.before_request
