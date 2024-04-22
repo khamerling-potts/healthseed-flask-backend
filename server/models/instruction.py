@@ -12,7 +12,7 @@ from config import db, bcrypt
 class Instruction(db.Model, SerializerMixin):
     __tablename__ = 'instructions'
 
-    serialize_rules = ('-user')
+    serialize_rules = ('-user', '-routine.instructions', '-medication.instructions')
 
     id=db.Column(db.Integer, primary_key=True)
     time = db.Column(db.String, nullable=False)

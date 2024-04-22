@@ -13,7 +13,7 @@ from models.instruction import Instruction
 class Routine(db.Model, SerializerMixin):
     __tablename__ = 'routines'
 
-    serialize_rules = ('-user')
+    serialize_rules = ('-user', "-instructions.routine", "-medications.routines")
 
     id=db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)

@@ -29,6 +29,14 @@ class User(db.Model, SerializerMixin):
     # One to many relationship with Provider
     providers = db.relationship('Provider', back_populates='user', cascade='all, delete-orphan')
 
+    # One to many relationship with Instruction
+    instructions = db.relationship('Instruction', back_populates='user', cascade='all, delete-orphan')
+
+    # One to many relationship with Medication
+    medications = db.relationship('Medication', back_populates='user', cascade='all, delete-orphan')
+
+    # One to many relationship with Routine
+    routines = db.relationship('Routine', back_populates='user', cascade='all, delete-orphan')
 
     @hybrid_property
     def password_hash(self):
