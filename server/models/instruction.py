@@ -16,7 +16,7 @@ class Instruction(db.Model, SerializerMixin):
 
     id=db.Column(db.Integer, primary_key=True)
     time = db.Column(db.String, nullable=False)
-    amount = db.Column(db.String, nullable=False)
+    dose = db.Column(db.String, nullable=False)
 
     # One to many relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))

@@ -17,9 +17,17 @@ from models.medication import Medication
 from models.routine import Routine
 
 
+# ONLY used to clear the database in development
+class ResetDB(Resource):
+    def get(self):
+        Instruction.query.delete()
+        # Medication.query.delete()
+        db.session.commit()
+        return {"message": "200 - Successfully cleared instructions"}, 200
+
 @app.before_request
 def check_logged_in():
-    if request.endpoint not in ['login', 'users']:
+    if request.endpoint not in ['login', 'users', 'reset']:
         print('checking logged in')
         if not session.get('user_id'):
             return {'error': 'Unauthorized'}, 401
@@ -200,13 +208,13 @@ class Medications(Resource):
 
             # Adding associated instruction objects if user specified them during medication creation
             if time1!='':
-                instruction = Instruction(time=time1, amount=dose1, medication_id = new_medication.id, user_id=user_id)
+                instruction = Instruction(time=time1, dose=dose1, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
             if time2!='':
-                instruction = Instruction(time=time2, amount=dose2, medication_id = new_medication.id, user_id=user_id)
+                instruction = Instruction(time=time2, dose=dose2, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
             if time3!='':
-                instruction = Instruction(time=time3, amount=dose3, medication_id = new_medication.id, user_id=user_id)
+                instruction = Instruction(time=time3, dose=dose3, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
             db.session.commit()
             return new_medication.to_dict(), 201
@@ -220,8 +228,7 @@ class MedicationByID(Resource):
         print(data)
         try:
             medication = Medication.query.filter_by(id=id).first()
-            for attr in data:
-                setattr(medication, attr, data.get(attr))
+            setattr(medication, "name", data.get('name'))
             db.session.add(medication)
             db.session.commit()
             return medication.to_dict(), 201
@@ -240,7 +247,7 @@ class MedicationByID(Resource):
             return {'error': '404 - Not found'}, 404
 
 
-
+api.add_resource(ResetDB, "/reset", endpoint="reset")
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
