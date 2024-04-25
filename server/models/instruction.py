@@ -30,4 +30,6 @@ class Instruction(db.Model, SerializerMixin):
     medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'))
     medication = db.relationship('Medication', back_populates='instructions')
 
+  
+
    

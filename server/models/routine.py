@@ -24,7 +24,8 @@ class Routine(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='routines')
 
     # One to many relationship with Instruction
-    instructions = db.relationship('Instruction', back_populates='routine', cascade='all, delete-orphan')
+    # Removing 'delete' and 'delete-orphan' cascade bc I want an instruction to exist without a routine
+    instructions = db.relationship('Instruction', back_populates='routine', cascade='save-update, merge')
 
     # Many to many relationship with Medication
     medications = association_proxy('instructions', 'medication', creator=lambda medication_obj: Instruction(medication=medication_obj))

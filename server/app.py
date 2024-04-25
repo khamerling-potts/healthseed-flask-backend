@@ -207,13 +207,13 @@ class Medications(Resource):
             db.session.commit()
 
             # Adding associated instruction objects if user specified them during medication creation
-            if time1!='':
+            if time1!='' and dose1!='':
                 instruction = Instruction(time=time1, dose=dose1, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
-            if time2!='':
+            if time2!='' and dose2!='':
                 instruction = Instruction(time=time2, dose=dose2, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
-            if time3!='':
+            if time3!='' and dose3!='':
                 instruction = Instruction(time=time3, dose=dose3, medication_id = new_medication.id, user_id=user_id)
                 db.session.add(instruction)
             db.session.commit()
@@ -223,6 +223,114 @@ class Medications(Resource):
             return {'error': "422 - Unprocessable Entity"}, 422
         
 class MedicationByID(Resource):
+    def patch(self, id):
+        data = request.get_json()
+        print(data)
+        try:
+            medication = Medication.query.filter_by(id=id).first()
+            setattr(medication, "name", data.get('name'))
+            db.session.add(medication)
+            db.session.commit()
+            return medication.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable Entity'}, 422
+        
+    def delete(self, id):
+        try:
+            medication = Medication.query.filter_by(id=id).first()
+            db.session.delete(medication)
+            db.session.commit()
+            return {"message": "medication successfully deleted"}, 204
+        except Exception as exc:
+            print(exc)
+            return {'error': '404 - Not found'}, 404
+        
+
+
+class Instructions(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        instructions = [instruction.to_dict() for instruction in Instruction.query.filter_by(user_id=user_id)]
+        return instructions, 200
+    
+    def post(self):
+        user_id = session.get('user_id')
+        data = request.get_json()
+        try:
+            new_instruction = Instruction(time=data.get('time'), dose=data.get('dose'), medication_id=data.get('medication_id'), user_id=user_id)
+            db.session.add(new_instruction)
+            db.session.commit()
+            medication = Medication.query.filter_by(id=new_instruction.medication_id).first()
+            return medication.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable entity'}, 422
+
+    
+class InstructionByID(Resource):
+
+    # returns the updated medication associated with this instruction
+    def patch(self, id):
+        # user_id = session.get('user_id')
+        data = request.get_json()
+        try:
+            instruction = Instruction.query.filter_by(id=id).first()
+            for attr in data:
+                if attr != 'medication_id':
+                    setattr(instruction, attr, data.get(attr))
+            db.session.add(instruction)
+            db.session.commit()
+
+            medication = Medication.query.filter_by(id=instruction.medication_id).first()
+            return medication.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': "422 - Unprocessable Entity"}, 422
+        
+    def delete(self, id):
+        try:
+            instruction = Instruction.query.filter_by(id=id).first()
+            medication_id = instruction.medication_id
+            db.session.delete(instruction)
+            db.session.commit()
+            medication = Medication.query.filter_by(id=medication_id).first()
+
+            return medication.to_dict(), 200
+        except Exception as exc:
+            print(exc)
+            return {'error': '404 - Not found'}, 404
+        
+
+
+class Routines(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        routines = [routine.to_dict() for routine in Routine.query.filter_by(user_id=user_id)]
+        return routines, 200
+    
+    def post(self):
+        user_id = session.get('user_id')
+        data = request.get_json()
+        [title, notes, instruction_ids] = [data.get('title'), data.get('notes'), data.get('instruction_ids')]
+        try:
+            new_routine = Routine(title=title, notes=notes, user_id=user_id)
+            db.session.add(new_routine)
+            db.session.commit()
+
+            # assign this routine to every instruction that the user selects for this routine
+            for instruction_id in instruction_ids:
+                instruction = Instruction.query.filter_by(id=instruction_id).first()
+                instruction.routine_id = new_routine.id
+                db.session.add(instruction)
+                db.session.commit()
+           
+            return new_routine.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': "422 - Unprocessable Entity"}, 422
+        
+class RoutineByID(Resource):
     def patch(self, id):
         data = request.get_json()
         print(data)
@@ -258,6 +366,11 @@ api.add_resource(Providers, '/providers', endpoint='providers')
 api.add_resource(ProviderByID, '/providers/<int:id>', endpoint="providers/<int:id>")
 api.add_resource(Medications, '/medications', endpoint='medications')
 api.add_resource(MedicationByID, '/medications/<int:id>', endpoint="medications/<int:id>")
+api.add_resource(Instructions, '/instructions', endpoint='instructions')
+api.add_resource(InstructionByID, '/instructions/<int:id>', endpoint="instructions/<int:id>")
+api.add_resource(Routines, '/routines', endpoint='routines')
+api.add_resource(RoutineByID, '/routines/<int:id>', endpoint="routines/<int:id>")
+
 
 
 if __name__ == "__main__":
