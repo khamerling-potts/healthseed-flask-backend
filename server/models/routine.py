@@ -18,6 +18,7 @@ class Routine(db.Model, SerializerMixin):
     id=db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     notes = db.Column(db.String)
+    times = db.Column(MutableList.as_mutable(ARRAY(db.String)))
 
     # One to many relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -29,3 +30,10 @@ class Routine(db.Model, SerializerMixin):
 
     # Many to many relationship with Medication
     medications = association_proxy('instructions', 'medication', creator=lambda medication_obj: Instruction(medication=medication_obj))
+
+    @validates('times')
+    def validate_time(self, key, times):
+        for time in times:
+            if time not in ['morning', 'afternoon', 'evening', 'any time']:
+                raise ValueError('each time must be morning, afternoon, evening, or any time')
+        return times

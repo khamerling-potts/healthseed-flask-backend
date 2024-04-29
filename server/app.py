@@ -20,7 +20,7 @@ from models.routine import Routine
 # ONLY used to clear the database in development
 class ResetDB(Resource):
     def get(self):
-        Instruction.query.delete()
+        # Instruction.query.delete()
         # Medication.query.delete()
         db.session.commit()
         return {"message": "200 - Successfully cleared instructions"}, 200
@@ -312,9 +312,9 @@ class Routines(Resource):
     def post(self):
         user_id = session.get('user_id')
         data = request.get_json()
-        [title, notes, instruction_ids] = [data.get('title'), data.get('notes'), data.get('instruction_ids')]
+        [title, notes, instruction_ids, times] = [data.get('title'), data.get('notes'), data.get('instruction_ids'), data.get('times')]
         try:
-            new_routine = Routine(title=title, notes=notes, user_id=user_id)
+            new_routine = Routine(title=title, notes=notes, times=times, user_id=user_id)
             db.session.add(new_routine)
             db.session.commit()
 
@@ -331,25 +331,31 @@ class Routines(Resource):
             return {'error': "422 - Unprocessable Entity"}, 422
         
 class RoutineByID(Resource):
-    def patch(self, id):
-        data = request.get_json()
-        print(data)
-        try:
-            medication = Medication.query.filter_by(id=id).first()
-            setattr(medication, "name", data.get('name'))
-            db.session.add(medication)
-            db.session.commit()
-            return medication.to_dict(), 201
-        except Exception as exc:
-            print(exc)
-            return {'error': '422 - Unprocessable Entity'}, 422
+    # def patch(self, id):
+    #     data = request.get_json()
+    #     print(data)
+    #     try:
+    #         medication = Medication.query.filter_by(id=id).first()
+    #         setattr(medication, "name", data.get('name'))
+    #         db.session.add(medication)
+    #         db.session.commit()
+    #         return medication.to_dict(), 201
+    #     except Exception as exc:
+    #         print(exc)
+    #         return {'error': '422 - Unprocessable Entity'}, 422
         
     def delete(self, id):
         try:
-            medication = Medication.query.filter_by(id=id).first()
-            db.session.delete(medication)
+            routine = Routine.query.filter_by(id=id).first()
+
+            # manually delete routine_ids from instructions bc I don't want the whole instruction deleted
+            for instruction in routine.instructions:
+                instruction.routine_id = None
+                db.session.add(instruction)
+
+            db.session.delete(routine)
             db.session.commit()
-            return {"message": "medication successfully deleted"}, 204
+            return {"message": "routine successfully deleted"}, 204
         except Exception as exc:
             print(exc)
             return {'error': '404 - Not found'}, 404
