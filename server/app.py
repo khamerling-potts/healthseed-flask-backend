@@ -331,18 +331,34 @@ class Routines(Resource):
             return {'error': "422 - Unprocessable Entity"}, 422
         
 class RoutineByID(Resource):
-    # def patch(self, id):
-    #     data = request.get_json()
-    #     print(data)
-    #     try:
-    #         medication = Medication.query.filter_by(id=id).first()
-    #         setattr(medication, "name", data.get('name'))
-    #         db.session.add(medication)
-    #         db.session.commit()
-    #         return medication.to_dict(), 201
-    #     except Exception as exc:
-    #         print(exc)
-    #         return {'error': '422 - Unprocessable Entity'}, 422
+    def patch(self, id):
+        data = request.get_json()
+        try:
+            routine = Routine.query.filter_by(id=id).first()
+            # First, remove routine_ids from all previously associated instructions
+            for instruction in routine.instructions:
+                instruction.routine_id = None
+                db.session.add(instruction)
+
+            # Update all attributes besides instructions
+            for attr in data:
+                if attr != 'instruction_ids':
+                    setattr(routine, attr, data.get(attr))
+
+            # Reassign this routine's id to current instructions
+            instruction_ids = data.get('instruction_ids')
+            for instruction_id in instruction_ids:
+                instruction = Instruction.query.filter_by(id=instruction_id).first()
+                instruction.routine_id = routine.id
+                db.session.add(instruction)
+                db.session.commit()
+
+            db.session.add(routine)
+            db.session.commit()
+            return routine.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable Entity'}, 422
         
     def delete(self, id):
         try:
@@ -355,7 +371,10 @@ class RoutineByID(Resource):
 
             db.session.delete(routine)
             db.session.commit()
-            return {"message": "routine successfully deleted"}, 204
+
+            # returning updated instructions to make state update easy on the front end
+            instructions = [instruction.to_dict() for instruction in Instruction.query.all()] 
+            return instructions, 200
         except Exception as exc:
             print(exc)
             return {'error': '404 - Not found'}, 404
