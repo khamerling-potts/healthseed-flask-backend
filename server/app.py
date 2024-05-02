@@ -15,6 +15,7 @@ from models.provider import Provider
 from models.instruction import Instruction
 from models.medication import Medication
 from models.routine import Routine
+from models.appointment import Appointment
 
 
 # ONLY used to clear the database in development

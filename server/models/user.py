@@ -38,6 +38,9 @@ class User(db.Model, SerializerMixin):
     # One to many relationship with Routine
     routines = db.relationship('Routine', back_populates='user', cascade='all, delete-orphan')
 
+    # One to many relationship with Appointment
+    appointments = db.relationship('Appointment', back_populates='user', cascade='all, delete-orphan')
+
     @hybrid_property
     def password_hash(self):
         raise AttributeError("Password hashes may not be viewed")

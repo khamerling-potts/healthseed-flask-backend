@@ -27,6 +27,9 @@ class Provider(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', back_populates='providers')
 
+    # One to many relationship with Appointment
+    appointments = db.relationship('Appointment', back_populates='provider', cascade='all, delete-orphan')
+
     @validates("name")
     def validate_username(self, key, name):
         if name == "":
