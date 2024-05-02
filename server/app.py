@@ -67,15 +67,10 @@ class Users(Resource):
         [username, password, name, birthday] = [data.get('username'), data.get('password'), data.get('name'), data.get('birthday')]
         try:
             new_user = User(username=username, name=name, birthday=birthday)
-            print('1')
             new_user.password_hash = password
-            print('2')
             db.session.add(new_user)
-            print('3')
             db.session.commit()
-            print('4')
             session['user_id'] = new_user.id
-            print('5')
             return new_user.to_dict(), 200
         except Exception as exc:
             print(exc)
@@ -379,6 +374,55 @@ class RoutineByID(Resource):
         except Exception as exc:
             print(exc)
             return {'error': '404 - Not found'}, 404
+        
+
+class Appointments(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        appointments = [appointment.to_dict() for appointment in Appointment.query.filter_by(user_id=user_id)]
+        return appointments, 200
+    
+    def post(self):
+        user_id = session.get('user_id')
+        data = request.get_json()
+        [category, location, datetime, user_id] = [data.get('category'), data.get('location'), data.get('datetime'), data.get('user_id')]
+        try:
+            new_appointment = Appointment(category=category, location=location, datetime=datetime, user_id=user_id)
+            if provider_id := data.get('provider_id'):
+                setattr(new_appointment, 'provider_id', provider_id)
+            print(new_appointment)
+            db.session.add(new_appointment)
+            db.session.commit()
+            return new_appointment.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': "422 - Unprocessable Entity"}, 422
+        
+
+class AppointmentByID(Resource):
+    def patch(self, id):
+        data = request.get_json()
+        try:
+            condition = Condition.query.filter_by(id=id).first()
+            for attr in data:
+                setattr(condition, attr, data.get(attr))
+            db.session.add(condition)
+            db.session.commit()
+            return condition.to_dict(), 201
+        except Exception as exc:
+            print(exc)
+            return {'error': '422 - Unprocessable Entity'}, 422
+        
+    def delete(self, id):
+        try:
+            condition = Condition.query.filter_by(id=id).first()
+            db.session.delete(condition)
+            db.session.commit()
+            return {"message": "condition successfully deleted"}, 204
+        except Exception as exc:
+            print(exc)
+            return {'error': '404 - Not found'}, 404
+
 
 
 api.add_resource(ResetDB, "/reset", endpoint="reset")
@@ -396,6 +440,8 @@ api.add_resource(Instructions, '/instructions', endpoint='instructions')
 api.add_resource(InstructionByID, '/instructions/<int:id>', endpoint="instructions/<int:id>")
 api.add_resource(Routines, '/routines', endpoint='routines')
 api.add_resource(RoutineByID, '/routines/<int:id>', endpoint="routines/<int:id>")
+api.add_resource(Appointments, '/appointments', endpoint='appointments')
+api.add_resource(AppointmentByID, '/appointments/<int:id>', endpoint='appointments/<int:id>')
 
 
 
