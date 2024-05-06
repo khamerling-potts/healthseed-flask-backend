@@ -13,7 +13,7 @@ from config import db, bcrypt
 class Appointment(db.Model, SerializerMixin):
     __tablename__ = "appointments"
 
-    serialize_rules = ('-user.appointments',)
+    serialize_rules = ('-user.appointments', '-provider.appointments')
 
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, nullable=False)
@@ -37,4 +37,4 @@ class Appointment(db.Model, SerializerMixin):
         return category.lower()
 
     def __repr__(self):
-        return f"Appointment {self.provider.name}, {self.datetime}, ID {self.id}"
+        return f"Appointment {self.location}, ID {self.id}"

@@ -4,6 +4,7 @@ import json
 from flask import request, session, make_response
 from flask_restful import Resource
 import phonenumbers
+from datetime import datetime
 
 # Local imports
 from config import app, db, api
@@ -385,9 +386,11 @@ class Appointments(Resource):
     def post(self):
         user_id = session.get('user_id')
         data = request.get_json()
-        [category, location, datetime, user_id] = [data.get('category'), data.get('location'), data.get('datetime'), data.get('user_id')]
+        [category, location, datetime] = [data.get('category'), data.get('location'), data.get('datetime')]
+        print(category)
         try:
             new_appointment = Appointment(category=category, location=location, datetime=datetime, user_id=user_id)
+            print(new_appointment)
             if provider_id := data.get('provider_id'):
                 setattr(new_appointment, 'provider_id', provider_id)
             print(new_appointment)
