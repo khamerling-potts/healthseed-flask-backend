@@ -16,7 +16,7 @@ from config import db, bcrypt
 class Provider(db.Model, SerializerMixin):
     __tablename__ = "providers"
 
-    serialize_rules = ('-user','-appointments.provider')
+    serialize_rules = ('-user','-appointments.provider', '-appointments.user')
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)

@@ -24,6 +24,7 @@ class ResetDB(Resource):
     def get(self):
         # Instruction.query.delete()
         # Medication.query.delete()
+        Appointment.query.delete()
         db.session.commit()
         return {"message": "200 - Successfully cleared instructions"}, 200
 
@@ -387,7 +388,6 @@ class Appointments(Resource):
         user_id = session.get('user_id')
         data = request.get_json()
         [category, location, datetime] = [data.get('category'), data.get('location'), data.get('datetime')]
-        print(category)
         try:
             new_appointment = Appointment(category=category, location=location, datetime=datetime, user_id=user_id)
             print(new_appointment)
@@ -395,7 +395,9 @@ class Appointments(Resource):
                 setattr(new_appointment, 'provider_id', provider_id)
             print(new_appointment)
             db.session.add(new_appointment)
+            print('here')
             db.session.commit()
+            print('here')
             return new_appointment.to_dict(), 201
         except Exception as exc:
             print(exc)
