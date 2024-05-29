@@ -13,7 +13,7 @@ from config import db, bcrypt
 class Appointment(db.Model, SerializerMixin):
     __tablename__ = "appointments"
 
-    serialize_rules = ('-user.appointments', '-provider.appointments')
+    serialize_rules = ('-user.appointments', '-provider.appointments', '-user.instructions', '-user.routines', '-user.instructions')
 
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, nullable=False)
@@ -32,9 +32,9 @@ class Appointment(db.Model, SerializerMixin):
     def validate_username(self, key, category):
         if category == "":
             raise ValueError("category must not be empty")
-        if category not in ['Vision', 'Dental', 'Medical', 'Mental Health', 'Fitness/Wellness']:
-            raise ValueError("category must be one of 'Vision', 'Dental', 'Medical', 'Mental Health', 'Fitness/Wellness'")
-        return category.lower()
+        if category not in ['Vision', 'Dental', 'Medical', 'Mental Health', 'Fitness/Wellness', 'Other']:
+            raise ValueError("category must be one of 'Vision', 'Dental', 'Medical', 'Mental Health', 'Fitness/Wellness', 'Other'")
+        return category
 
     def __repr__(self):
         return f"Appointment {self.location}, ID {self.id}"

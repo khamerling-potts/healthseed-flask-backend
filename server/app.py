@@ -30,7 +30,7 @@ class ResetDB(Resource):
 
 @app.before_request
 def check_logged_in():
-    if request.endpoint not in ['login', 'users', 'reset']:
+    if request.endpoint not in ['login', 'users', 'reset', 'check_username']:
         print('checking logged in')
         if not session.get('user_id'):
             return {'error': 'Unauthorized'}, 401
@@ -58,6 +58,17 @@ class Logout(Resource):
         session['user_id'] = None
         return {}, 204
 
+# Checks whether username is taken when signing up
+class CheckUsername(Resource):
+    def post(self):
+        data = request.get_json()
+        username = data.get("username")
+        user = User.query.filter_by(username=username.lower()).first()
+        print(user)
+        if user:
+            return {"error": "409 - Conflict"}, 409
+        return {}, 200
+    
 
 class Users(Resource):
     def get(self):
@@ -408,22 +419,23 @@ class AppointmentByID(Resource):
     def patch(self, id):
         data = request.get_json()
         try:
-            condition = Condition.query.filter_by(id=id).first()
+            appointment = Appointment.query.filter_by(id=id).first()
             for attr in data:
-                setattr(condition, attr, data.get(attr))
-            db.session.add(condition)
+                setattr(appointment, attr, data.get(attr))
+            db.session.add(appointment)
             db.session.commit()
-            return condition.to_dict(), 201
+            print(appointment.to_dict())
+            return appointment.to_dict(), 201
         except Exception as exc:
             print(exc)
             return {'error': '422 - Unprocessable Entity'}, 422
         
     def delete(self, id):
         try:
-            condition = Condition.query.filter_by(id=id).first()
-            db.session.delete(condition)
+            appointment = Appointment.query.filter_by(id=id).first()
+            db.session.delete(appointment)
             db.session.commit()
-            return {"message": "condition successfully deleted"}, 204
+            return {"message": "appointment successfully deleted"}, 204
         except Exception as exc:
             print(exc)
             return {'error': '404 - Not found'}, 404
@@ -434,6 +446,7 @@ api.add_resource(ResetDB, "/reset", endpoint="reset")
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
+api.add_resource(CheckUsername, "/check_username", endpoint="check_username")
 api.add_resource(Users, "/users", endpoint="users")
 api.add_resource(Conditions, '/conditions', endpoint='conditions')
 api.add_resource(ConditionByID, '/conditions/<int:id>', endpoint='conditions/<int:id>')

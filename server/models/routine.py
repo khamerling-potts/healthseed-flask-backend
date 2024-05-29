@@ -18,7 +18,7 @@ class Routine(db.Model, SerializerMixin):
     id=db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     notes = db.Column(db.String)
-    times = db.Column(MutableList.as_mutable(ARRAY(db.String)))
+    times = db.Column(MutableList.as_mutable(ARRAY(db.String)), nullable=False)
 
     # One to many relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -37,3 +37,10 @@ class Routine(db.Model, SerializerMixin):
             if time not in ['morning', 'afternoon', 'evening', 'any time']:
                 raise ValueError('each time must be morning, afternoon, evening, or any time')
         return times
+    
+
+    
+
+
+
+

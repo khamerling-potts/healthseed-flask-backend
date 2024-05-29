@@ -20,8 +20,8 @@ class Provider(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)
-    phone = db.Column(db.String)
-    address = db.Column(db.String)
+    phone = db.Column(db.String, nullable=False)
+    address = db.Column(db.String, nullable=False)
 
     # One to many relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
