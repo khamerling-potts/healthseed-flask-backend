@@ -200,7 +200,8 @@ class Medications(Resource):
             time2, 
             dose2, 
             time3, 
-            dose3
+            dose3,
+            notes
         ] = [
                 data.get('name'), 
                 data.get('time1'), 
@@ -208,10 +209,13 @@ class Medications(Resource):
                 data.get('time2'), 
                 data.get('dose2'), 
                 data.get('time3'), 
-                data.get('dose3')
+                data.get('dose3'),
+                data.get('notes')
             ]
         try:
             new_medication = Medication(name=name, user_id=user_id)
+            if notes:
+                new_medication.notes = notes
             db.session.add(new_medication)
             db.session.commit()
 
