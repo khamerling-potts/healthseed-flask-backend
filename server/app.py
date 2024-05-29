@@ -242,6 +242,7 @@ class MedicationByID(Resource):
         try:
             medication = Medication.query.filter_by(id=id).first()
             setattr(medication, "name", data.get('name'))
+            setattr(medication, 'notes', data.get('notes'))
             db.session.add(medication)
             db.session.commit()
             return medication.to_dict(), 201
